@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Response, Depends
+from fastapi import FastAPI, Request, Response, Depends, APIRouter, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
@@ -26,42 +26,12 @@ logger = logging.getLogger(__name__)
 
 # Create FastAPI app
 app = FastAPI(
-    title=settings.PROJECT_NAME,
-    openapi_url="/api/openapi.json",
-    docs_url=None,  # Disable default docs to use custom docs
-    redoc_url=None,  # Disable default redoc to use custom redoc
-    description="""
-    MCP iOS Testing Server API
-    
-    This server implements the Model-Context Protocol (MCP) for iOS application testing.
-    It provides tools for controlling iOS devices, capturing screenshots, analyzing UI elements,
-    and automating test flows through a standard JSON-RPC interface.
-    
-    ## Key Features
-    
-    * MCP-compliant JSON-RPC API
-    * Tool discovery and execution
-    * Resource management (screenshots, XML hierarchies)
-    * Session management for test context
-    * Authentication and authorization
-    * Telemetry for monitoring operations
-    
-    ## Authentication
-    
-    Most endpoints require authentication via API key. To authenticate, include your API key
-    in the `X-API-Key` header with your requests.
-    
-    ## Server-Sent Events
-    
-    The server uses Server-Sent Events (SSE) for real-time updates. Connect to the
-    `/mcp/events/{client_id}` endpoint to receive event streams.
-    """,
+    title="Mobile Control Plane API",
+    description="API for controlling mobile devices and interactions",
     version="1.0.0",
-    contact={
-        "name": "iOS Testing Framework Team",
-        "url": "https://github.com/your-org/ios-automation-agent",
-        "email": "support@example.com",
-    },
+    docs_url=None,
+    redoc_url=None,
+    openapi_url="/api/openapi.json",
     license_info={
         "name": "MIT",
         "url": "https://opensource.org/licenses/MIT",

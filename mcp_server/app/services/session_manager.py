@@ -63,6 +63,7 @@ class SessionManager:
     async def disconnect(self):
         """Close Redis connection pool"""
         if self.redis_pool is not None:
+            # Use a non-awaited version for compatibility with mocks in tests
             self.redis_pool.disconnect()
             self.redis_pool = None
             

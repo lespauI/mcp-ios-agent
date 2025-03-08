@@ -1,6 +1,7 @@
 import pytest
 import json
 from fastapi.testclient import TestClient
+from app.services.tool_registry import registry, register_tool, ToolParameter
 
 
 def test_connect(test_client):
@@ -90,4 +91,37 @@ def test_jsonrpc_batch_request(test_client):
     assert isinstance(data, list)
     assert len(data) == 2
     assert data[0]["id"] == "test-1"
-    assert data[1]["id"] == "test-2" 
+    assert data[1]["id"] == "test-2"
+
+
+# Register a mock tool for testing
+@register_tool(
+    name="example_tool",
+    description="A mock tool for testing",
+    parameters=[ToolParameter(name="param1", type="string", required=True, description="A sample parameter")],
+    returns={"status": "string", "param1": "string"}
+)
+async def example_tool(param1: str) -> dict:
+    return {"status": "success", "param1": param1}
+
+
+def test_execute_tool(test_client):
+    """Test the execute_tool method via JSON-RPC"""
+    # Create a valid request for execute_tool
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "execute_tool",
+        "params": {
+            "name": "example_tool",
+            "parameters": {"param1": "value1"}
+        },
+        "id": 1
+    }
+    response = test_client.post("/mcp/jsonrpc", json=payload)
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert "result" in data
+    assert data["result"] is not None
+    assert data["result"]["status"] == "success"
+    assert data["result"]["param1"] == {"param1": "value1"} 
