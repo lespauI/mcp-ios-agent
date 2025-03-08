@@ -1,0 +1,156 @@
+from typing import Dict, List, Optional, Any, Callable, Awaitable, Union
+from pydantic import BaseModel, Schema, create_model, ValidationError
+import json
+import inspect
+import logging
+from app.core.errors import InvalidParamsError, MethodNotFoundError
+
+logger = logging.getLogger(__name__)
+
+
+class ToolParameter(BaseModel):
+    name: str
+    type: str
+    description: str
+    required: bool = False
+    default: Optional[Any] = None
+    enum: Optional[List[Any]] = None
+
+
+class Tool(BaseModel):
+    name: str
+    description: str
+    parameters: List[ToolParameter]
+    returns: Dict[str, Any]
+    schema: Dict[str, Any]  # JSON Schema definition
+
+
+class ToolRegistry:
+    def __init__(self):
+        self.tools: Dict[str, Dict[str, Any]] = {}
+    
+    def register_tool(
+        self,
+        name: str,
+        description: str,
+        handler: Callable[[Dict[str, Any]], Awaitable[Any]],
+        parameters: List[ToolParameter],
+        returns: Dict[str, Any]
+    ) -> None:
+        """Register a new tool with the registry"""
+        # Create JSON Schema for parameters
+        properties = {}
+        required = []
+        
+        for param in parameters:
+            param_schema = {
+                "type": param.type,
+                "description": param.description
+            }
+            
+            if param.enum:
+                param_schema["enum"] = param.enum
+                
+            if param.default is not None:
+                param_schema["default"] = param.default
+                
+            if param.required:
+                required.append(param.name)
+                
+            properties[param.name] = param_schema
+        
+        # Create the complete schema
+        schema = {
+            "type": "object",
+            "properties": properties
+        }
+        
+        if required:
+            schema["required"] = required
+            
+        # Store the tool definition
+        self.tools[name] = {
+            "name": name,
+            "description": description,
+            "handler": handler,
+            "parameters": parameters,
+            "returns": returns,
+            "schema": schema
+        }
+        
+        logger.info(f"Registered tool: {name}")
+        
+    def get_tool(self, name: str) -> Optional[Dict[str, Any]]:
+        """Get a tool by name"""
+        return self.tools.get(name)
+        
+    def list_tools(self) -> List[Dict[str, Any]]:
+        """List all registered tools"""
+        return [
+            {
+                "name": name,
+                "description": tool["description"],
+                "parameters": [p.dict() for p in tool["parameters"]],
+                "returns": tool["returns"],
+                "schema": tool["schema"]
+            }
+            for name, tool in self.tools.items()
+        ]
+        
+    async def execute_tool(self, name: str, params: Dict[str, Any]) -> Any:
+        """Execute a tool with the given parameters"""
+        tool = self.get_tool(name)
+        if not tool:
+            raise MethodNotFoundError(f"Tool not found: {name}")
+            
+        # Validate parameters against schema
+        try:
+            # Create a dynamic model for validation
+            prop_dict = {}
+            for param in tool["parameters"]:
+                if param.required:
+                    prop_dict[param.name] = (eval(param.type), ...)
+                else:
+                    prop_dict[param.name] = (Optional[eval(param.type)], param.default)
+                    
+            ValidationModel = create_model('ValidationModel', **prop_dict)
+            
+            # Validate the input parameters
+            validated_params = ValidationModel(**params).dict(exclude_unset=True)
+            
+            # Execute the handler
+            result = await tool["handler"](validated_params)
+            return result
+        except ValidationError as e:
+            raise InvalidParamsError(
+                message=f"Invalid parameters for tool: {name}",
+                data={"errors": e.errors()}
+            )
+        except Exception as e:
+            logger.exception(f"Error executing tool {name}")
+            raise
+
+
+# Create a decorator for registering tools
+def register_tool(
+    name: str,
+    description: str,
+    parameters: List[ToolParameter],
+    returns: Dict[str, Any]
+):
+    """Decorator for registering tools"""
+    def decorator(func: Callable):
+        # Ensure the function is registered with the registry
+        registry.register_tool(
+            name=name,
+            description=description,
+            handler=func,
+            parameters=parameters,
+            returns=returns
+        )
+        return func
+    return decorator
+
+
+# Create a singleton instance
+registry = ToolRegistry() 

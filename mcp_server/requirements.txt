@@ -1,0 +1,45 @@
+# Web framework and server
+fastapi>=0.100.0,<0.110.0  # This version supports Pydantic v2
+uvicorn>=0.21.1,<0.22.0
+
+# Pydantic
+pydantic>=2.0.0,<3.0.0
+pydantic-settings>=2.0.0,<3.0.0
+
+# Server-sent events
+sse-starlette>=1.6.1,<1.7.0
+
+# Environment variables
+python-dotenv>=1.0.0,<1.1.0
+
+# Testing
+pytest>=7.3.1,<7.4.0
+pytest-cov>=4.0.0
+pytest-asyncio>=0.21.0,<0.22.0
+
+# HTTP client
+httpx>=0.24.0,<0.25.0
+
+# File handling
+aiofiles>=23.1.0,<23.2.0
+python-multipart>=0.0.6,<0.1.0
+
+# Redis
+redis>=4.5.4,<4.6.0
+
+# Authentication
+pyjwt>=2.7.0,<2.8.0
+email-validator>=2.0.0,<2.1.0
+
+# Utilities
+setuptools>=65.0.0  # Required for distutils
+typing-extensions>=4.5.0
+
+# New dependencies
+python-jose>=3.3.0,<3.4.0
+psutil>=5.9.5,<5.10.0  # For system metrics collection
+types-redis>=4.5.5,<4.6.0  # Type hints for Redis
+types-psutil>=5.9.5,<5.10.0  # Type hints for psutil
+prometheus-client>=0.17.0,<0.18.0  # For Prometheus metrics
+pillow>=9.5.0,<9.6.0  # For image processing
+python-magic>=0.4.27,<0.5.0  # For file type detection
