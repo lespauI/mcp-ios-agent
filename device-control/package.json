@@ -1,0 +1,49 @@
+{
+  "name": "device-control",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:leaks": "jest --detectOpenHandles",
+    "lint": "eslint 'src/**/*.ts'",
+    "start": "ts-node src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Device Control Foundation for MCP-based iOS Testing Framework",
+  "dependencies": {
+    "jimp": "^0.22.10",
+    "redis": "^4.6.13",
+    "xmldom": "^0.6.0"
+  },
+  "optionalDependencies": {
+    "opencv4nodejs-prebuilt": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^5.2.0",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.13.10",
+    "@types/sinon": "^17.0.4",
+    "@wdio/cli": "^9.11.0",
+    "@wdio/local-runner": "^9.11.0",
+    "@wdio/mocha-framework": "^9.11.0",
+    "@wdio/spec-reporter": "^9.11.0",
+    "appium": "^2.16.2",
+    "appium-ios-driver": "^4.8.3",
+    "chai": "^5.2.0",
+    "glob": "^11.0.1",
+    "jest": "^29.7.0",
+    "sinon": "^19.0.2",
+    "ts-jest": "^29.2.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2",
+    "webdriverio": "^9.11.0"
+  }
+}
